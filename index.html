@@ -4,91 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Acapella Vault</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        bg: '#202225',      // Discord Darkest
-                        surface: '#2f3136', // Discord Darker
-                        text: '#dcddde',    // Discord Text
-                        accent: '#5865F2',  // Blurple
-                        accentHover: '#4752c4'
+                        bg: '#202225', surface: '#2f3136', text: '#dcddde', accent: '#5865F2', accentHover: '#4752c4'
                     }
                 }
             }
         }
     </script>
-
     <style>
-        /* --- Base Styles --- */
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        .accelerate { transform: translateZ(0); }
-        
-        /* --- Custom Scrollbar --- */
-        ::-webkit-scrollbar { width: 10px; }
-        ::-webkit-scrollbar-track { background: #202225; }
+        body { font-family: -apple-system, system-ui, sans-serif; }
+        ::-webkit-scrollbar { width: 10px; background: #202225; }
         ::-webkit-scrollbar-thumb { background: #40444b; border-radius: 5px; }
-        ::-webkit-scrollbar-thumb:hover { background: #5865F2; }
-
-        /* --- Range Slider (Progress Bar) --- */
         input[type=range] { -webkit-appearance: none; background: transparent; }
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none; height: 12px; width: 12px;
-            border-radius: 50%; background: #dcddde; cursor: pointer; margin-top: -4px;
-        }
-        input[type=range]::-webkit-slider-thumb:hover { background: #5865F2; transform: scale(1.2); }
-        input[type=range]::-webkit-slider-runnable-track {
-            width: 100%; height: 4px; cursor: pointer; background: #4f545c; border-radius: 2px;
-        }
-
-        /* --- Player Animation --- */
-        #player-bar { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 12px; width: 12px; border-radius: 50%; background: #dcddde; margin-top: -4px; cursor: pointer; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; background: #4f545c; border-radius: 2px; }
+        #player-bar { transition: transform 0.3s ease; }
         .player-hidden { transform: translateY(100%); }
-        
-        /* --- Card Hover --- */
-        .card-hover:hover { transform: translateY(-2px); border-color: #5865F2; }
+        .card:hover { transform: translateY(-2px); border-color: #5865F2; }
     </style>
 </head>
 <body class="bg-bg text-text h-screen flex flex-col overflow-hidden selection:bg-accent selection:text-white">
 
-    <!-- 1. HEADER -->
+    <!-- HEADER -->
     <header class="bg-surface border-b border-black/20 z-50 flex-none shadow-sm">
         <div class="max-w-7xl mx-auto px-4 py-3">
             <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
-                
-                <!-- Brand -->
-                <div class="flex items-center gap-3 cursor-pointer select-none group" onclick="app.goHome()">
-                    <div class="w-8 h-8 bg-accent rounded flex items-center justify-center font-bold text-white group-hover:bg-accentHover transition-colors">AV</div>
+                <div class="flex items-center gap-3 cursor-pointer select-none" onclick="app.goHome()">
+                    <div class="w-8 h-8 bg-accent rounded flex items-center justify-center font-bold text-white">AV</div>
                     <div>
                         <h1 class="font-bold text-white leading-tight">Acapella Vault</h1>
-                        <p class="text-[10px] text-gray-500 font-mono" id="status-text">Connecting...</p>
+                        <p class="text-[10px] text-gray-500 font-mono" id="status-text">Initializing...</p>
                     </div>
                 </div>
-
-                <!-- Search -->
                 <div class="relative w-full md:w-96">
-                    <input type="text" id="search-input" 
-                        class="w-full bg-bg text-white px-3 py-2 text-sm rounded border border-gray-700 focus:border-accent focus:outline-none transition-colors placeholder-gray-600"
-                        placeholder="Search artists, bpm, key..." autocomplete="off">
+                    <input type="text" id="search-input" class="w-full bg-bg text-white px-3 py-2 text-sm rounded border border-gray-700 focus:border-accent focus:outline-none placeholder-gray-600" placeholder="Search..." autocomplete="off">
                 </div>
             </div>
-
-            <!-- Navigation Bar -->
             <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-700/50">
                 <div class="flex items-center gap-2 text-sm">
-                    <button onclick="app.goHome()" class="hover:text-white transition-colors flex items-center gap-1">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-                        Library
-                    </button>
-                    <span id="nav-separator" class="hidden text-gray-600">/</span>
-                    <span id="nav-current" class="hidden font-bold text-white">Artist</span>
+                    <button onclick="app.goHome()" class="hover:text-white">Library</button>
+                    <span id="nav-sep" class="hidden text-gray-600">/</span>
+                    <span id="nav-curr" class="hidden font-bold text-white">Artist</span>
                 </div>
-
-                <!-- Filters -->
                 <div id="filter-bar" class="hidden flex items-center gap-3 text-xs">
                     <div class="flex items-center gap-1 bg-bg px-2 py-1 rounded border border-gray-700">
                         <span class="font-bold text-gray-500">BPM</span>
@@ -105,132 +67,105 @@
         </div>
     </header>
 
-    <!-- 2. MAIN CONTENT -->
+    <!-- CONTENT -->
     <main class="flex-1 overflow-y-auto p-4 pb-24" id="main-scroll">
         <div class="max-w-7xl mx-auto">
             <div id="grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3"></div>
-            
             <div id="empty" class="hidden text-center py-20 opacity-60">
-                <svg class="w-16 h-16 mx-auto text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 <p class="text-gray-500 font-medium">Nothing found</p>
                 <button onclick="app.resetFilters()" class="text-accent hover:underline text-sm mt-2">Reset Filters</button>
+            </div>
+            <div id="error-screen" class="hidden text-center py-20">
+                <p class="text-red-400 font-bold mb-2">Library Not Found</p>
+                <div class="text-xs text-gray-500 max-w-md mx-auto space-y-2">
+                    <p>Could not load <code>acapellas/library.json</code>.</p>
+                    <ul class="list-disc list-inside text-left ml-8 text-gray-400">
+                        <li>Ensure you ran <code>python generate_index.py</code></li>
+                        <li>Ensure <code>library.json</code> exists in the <code>acapellas</code> folder</li>
+                        <li>If testing locally, use a local server (e.g. Live Server)</li>
+                    </ul>
+                </div>
             </div>
         </div>
     </main>
 
-    <!-- 3. AUDIO PLAYER (Sticky Footer) -->
+    <!-- PLAYER -->
     <footer id="player-bar" class="fixed bottom-0 left-0 right-0 bg-[#292b2f] border-t border-black/20 p-3 shadow-2xl player-hidden z-50">
         <div class="max-w-7xl mx-auto flex items-center gap-4">
-            
-            <!-- Info -->
             <div class="w-1/4 min-w-[120px] overflow-hidden">
-                <div class="font-bold text-white text-sm truncate" id="player-title">Select a track</div>
-                <div class="text-xs text-gray-400 truncate" id="player-artist">--</div>
+                <div class="font-bold text-white text-sm truncate" id="p-title">Select a track</div>
+                <div class="text-xs text-gray-400 truncate" id="p-artist">--</div>
             </div>
-
-            <!-- Controls -->
             <div class="flex-1 flex flex-col items-center gap-1 max-w-lg mx-auto">
                 <div class="flex items-center gap-4">
                     <button onclick="app.seek(-10)" class="text-gray-400 hover:text-white"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M11 19V5l-9 7 9 7zm2-14v14l9-7-9-7z" transform="scale(-1,1) translate(-24,0)"></path></svg></button>
-                    <button onclick="app.togglePlay()" class="bg-white text-black rounded-full p-2 hover:scale-105 transition-transform" id="play-pause-btn">
+                    <button onclick="app.togglePlay()" class="bg-white text-black rounded-full p-2 hover:scale-105 transition-transform">
                         <svg id="icon-play" class="w-5 h-5 translate-x-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                         <svg id="icon-pause" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
                     </button>
                     <button onclick="app.seek(10)" class="text-gray-400 hover:text-white"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M11 19V5l-9 7 9 7zm2-14v14l9-7-9-7z"/></svg></button>
                 </div>
                 <div class="w-full flex items-center gap-2 text-[10px] text-gray-400 font-mono">
-                    <span id="time-current">0:00</span>
-                    <input type="range" id="progress-bar" value="0" max="100" class="flex-1 h-1 focus:outline-none">
-                    <span id="time-total">0:00</span>
+                    <span id="t-curr">0:00</span>
+                    <input type="range" id="progress" value="0" max="100" class="flex-1 h-1 focus:outline-none">
+                    <span id="t-total">0:00</span>
                 </div>
             </div>
-
-            <!-- Volume/Close -->
             <div class="w-1/4 flex justify-end">
-                <button onclick="app.closePlayer()" class="text-gray-500 hover:text-red-400 transition-colors p-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
+                <button onclick="app.closePlayer()" class="text-gray-500 hover:text-red-400 p-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
             </div>
         </div>
     </footer>
 
-    <!-- 4. APP LOGIC -->
     <script>
         const CONFIG = {
-            indexUrl: 'acapellas/_index.json',
-            baseFileUrl: 'acapellas/' 
-        };
-
-        const MOCK_DB = {
-            "generated": "2026-01-01T00:00:00Z",
-            "tracks": [
-                { "artist": "Drake", "title": "God's Plan", "bpm": 154, "key": "Am", "format": "wav", "filename": "Drake_GodsPlan_154BPM_Am.wav" },
-                { "artist": "Rihanna", "title": "Work (Demo)", "bpm": 0, "key": "Unknown", "format": "wav", "filename": "Rihanna_WorkDemo.wav" },
-                { "artist": "The Weeknd", "title": "Blinding Lights", "bpm": 171, "key": "Fm", "format": "mp3", "filename": "TheWeeknd_BlindingLights_171BPM_Fm.mp3" }
-            ]
+            // Use explicit relative paths for robust loading
+            indexUrl: './acapellas/library.json',
+            baseFileUrl: './acapellas/' 
         };
 
         const app = {
             audio: new Audio(),
-            state: {
-                allTracks: [],
-                grouped: {},
-                view: 'artists', 
-                activeArtist: null,
-                filters: { search: "", minBPM: 0, maxBPM: 999, key: "All" },
-                isPlaying: false
-            },
+            state: { tracks: [], grouped: {}, view: 'artists', activeArtist: null, filter: {s:"", min:0, max:999, key:"All"}, playing: false },
             
-            // DOM References
             els: {
                 grid: document.getElementById('grid'),
                 empty: document.getElementById('empty'),
+                error: document.getElementById('error-screen'),
                 status: document.getElementById('status-text'),
-                navSeparator: document.getElementById('nav-separator'),
-                navCurrent: document.getElementById('nav-current'),
+                navSep: document.getElementById('nav-sep'),
+                navCurr: document.getElementById('nav-curr'),
                 filterBar: document.getElementById('filter-bar'),
-                inputs: {
-                    search: document.getElementById('search-input'),
-                    bpmMin: document.getElementById('bpm-min'),
-                    bpmMax: document.getElementById('bpm-max'),
-                    key: document.getElementById('key-select')
-                },
-                player: {
-                    bar: document.getElementById('player-bar'),
-                    title: document.getElementById('player-title'),
-                    artist: document.getElementById('player-artist'),
-                    progress: document.getElementById('progress-bar'),
-                    currTime: document.getElementById('time-current'),
-                    totalTime: document.getElementById('time-total'),
-                    iconPlay: document.getElementById('icon-play'),
-                    iconPause: document.getElementById('icon-pause')
-                }
+                inputs: { s: document.getElementById('search-input'), min: document.getElementById('bpm-min'), max: document.getElementById('bpm-max'), key: document.getElementById('key-select') },
+                p: { bar: document.getElementById('player-bar'), title: document.getElementById('p-title'), artist: document.getElementById('p-artist'), prog: document.getElementById('progress'), curr: document.getElementById('t-curr'), total: document.getElementById('t-total'), play: document.getElementById('icon-play'), pause: document.getElementById('icon-pause') }
             },
 
             async init() {
                 try {
                     const res = await fetch(CONFIG.indexUrl);
-                    if (!res.ok) throw new Error("Index missing");
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
                     const data = await res.json();
-                    this.state.allTracks = data.tracks;
-                    this.els.status.textContent = `${this.state.allTracks.length} tracks online`;
+                    
+                    this.state.tracks = data.tracks;
+                    this.els.status.textContent = `${this.state.tracks.length} tracks online`;
                     this.els.status.className = "text-[10px] text-green-500 font-mono";
+                    this.els.error.classList.add('hidden');
+                    
+                    this.groupData();
+                    this.setupEvents();
+                    this.goHome();
                 } catch (e) {
-                    console.warn("Using Mock Data (Dev Mode)");
-                    this.state.allTracks = MOCK_DB.tracks;
-                    this.els.status.textContent = "Preview Mode (No Data)";
-                    this.els.status.className = "text-[10px] text-yellow-500 font-mono";
+                    console.error("Load Error:", e);
+                    this.els.status.textContent = "Connection Failed";
+                    this.els.status.className = "text-[10px] text-red-500 font-mono";
+                    this.els.grid.innerHTML = '';
+                    this.els.error.classList.remove('hidden');
                 }
-
-                this.groupData();
-                this.setupPlayerEvents();
-                this.setupInputEvents();
-                this.goHome();
             },
 
             groupData() {
                 this.state.grouped = {};
-                this.state.allTracks.forEach(t => {
+                this.state.tracks.forEach(t => {
                     if (!this.state.grouped[t.artist]) this.state.grouped[t.artist] = [];
                     this.state.grouped[t.artist].push(t);
                 });
@@ -239,227 +174,151 @@
             goHome() {
                 this.state.view = 'artists';
                 this.state.activeArtist = null;
-                this.state.filters.search = ""; 
-                this.els.inputs.search.value = "";
+                this.els.inputs.s.value = ""; 
+                this.state.filter.s = "";
                 this.updateUI();
             },
 
             openArtist(name) {
                 this.state.view = 'tracks';
                 this.state.activeArtist = name;
-                this.state.filters.search = "";
-                this.els.inputs.search.value = "";
+                this.els.inputs.s.value = "";
+                this.state.filter.s = "";
                 this.updateUI();
             },
 
             updateUI() {
-                const isHome = this.state.view === 'artists';
-                
-                // Toggle Nav
-                this.els.navSeparator.classList.toggle('hidden', isHome);
-                this.els.navCurrent.classList.toggle('hidden', isHome);
-                this.els.filterBar.classList.toggle('hidden', isHome);
-                
-                if (!isHome) this.els.navCurrent.textContent = this.state.activeArtist;
-                
-                isHome ? this.renderArtists() : this.renderTracks();
+                const home = this.state.view === 'artists';
+                this.els.navSep.classList.toggle('hidden', home);
+                this.els.navCurr.classList.toggle('hidden', home);
+                this.els.filterBar.classList.toggle('hidden', home);
+                if (!home) this.els.navCurr.textContent = this.state.activeArtist;
+                home ? this.renderArtists() : this.renderTracks();
             },
 
             renderArtists() {
-                const query = this.state.filters.search.toLowerCase();
+                const q = this.state.filter.s.toLowerCase();
                 const artists = Object.keys(this.state.grouped).sort();
                 this.els.grid.innerHTML = '';
+                const frag = document.createDocumentFragment();
                 let found = false;
 
-                const fragment = document.createDocumentFragment();
                 artists.forEach(artist => {
-                    if (query && !artist.toLowerCase().includes(query)) return;
+                    if (q && !artist.toLowerCase().includes(q)) return;
                     found = true;
-                    
                     const count = this.state.grouped[artist].length;
                     const el = document.createElement('div');
-                    el.className = "bg-surface border border-gray-700/50 p-4 rounded cursor-pointer transition-all card-hover group";
+                    el.className = "bg-surface border border-gray-700/50 p-4 rounded cursor-pointer transition-all card hover:border-accent group";
                     el.onclick = () => this.openArtist(artist);
-                    el.innerHTML = `
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-[#202225] rounded flex items-center justify-center text-accent group-hover:bg-accent group-hover:text-white transition-colors">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
-                            </div>
-                            <div class="min-w-0">
-                                <h3 class="font-bold text-white truncate text-sm">${artist}</h3>
-                                <span class="text-xs text-gray-500">${count} tracks</span>
-                            </div>
-                        </div>
-                    `;
-                    fragment.appendChild(el);
+                    el.innerHTML = `<div class="flex items-center gap-3"><div class="w-10 h-10 bg-[#202225] rounded flex items-center justify-center text-accent group-hover:bg-accent group-hover:text-white transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg></div><div class="min-w-0"><h3 class="font-bold text-white truncate text-sm">${artist}</h3><span class="text-xs text-gray-500">${count} tracks</span></div></div>`;
+                    frag.appendChild(el);
                 });
-                this.els.grid.appendChild(fragment);
-                this.toggleEmpty(!found);
+                this.els.grid.appendChild(frag);
+                this.els.empty.classList.toggle('hidden', found);
             },
 
             renderTracks() {
                 const tracks = this.state.grouped[this.state.activeArtist] || [];
-                const query = this.state.filters.search.toLowerCase();
-                const { minBPM, maxBPM, key } = this.state.filters;
+                const {s, min, max, key} = this.state.filter;
+                const q = s.toLowerCase();
                 
                 this.els.grid.innerHTML = '';
+                const frag = document.createDocumentFragment();
                 let found = false;
-                const fragment = document.createDocumentFragment();
 
-                tracks.forEach(track => {
-                    const matchSearch = !query || track.title.toLowerCase().includes(query);
-                    const matchBPM = track.bpm >= minBPM && track.bpm <= maxBPM;
-                    const matchKey = key === "All" || track.key === key;
-
-                    if (!matchSearch || !matchBPM || !matchKey) return;
+                tracks.forEach(t => {
+                    if ((q && !t.title.toLowerCase().includes(q)) || t.bpm < min || t.bpm > max || (key !== "All" && t.key !== key)) return;
                     found = true;
 
-                    // Paths
-                    const safeArtist = encodeURIComponent(track.artist);
-                    const safeFile = encodeURIComponent(track.filename);
-                    const downloadUrl = `${CONFIG.baseFileUrl}${safeArtist}/${safeFile}`;
+                    // USE THE PATH FROM JSON
+                    // We map the path segments to be URL safe
+                    const fileUrl = CONFIG.baseFileUrl + t.path.split('/').map(encodeURIComponent).join('/');
                     
-                    // Display Logic for Missing Metadata
-                    const hasBPM = track.bpm > 0;
-                    const hasKey = track.key !== "Unknown";
-                    
-                    const bpmText = hasBPM ? `${track.bpm} BPM` : "--";
-                    const keyText = hasKey ? track.key : "--";
-                    
-                    const bpmClass = hasBPM ? "text-gray-300 border-gray-800" : "text-gray-600 border-gray-800/50";
-                    const keyClass = hasKey ? "text-gray-300 border-gray-800" : "text-gray-600 border-gray-800/50";
-
-                    // Escape data for inline onclick
-                    const trackStr = JSON.stringify(track).replace(/"/g, '&quot;');
+                    const hasBPM = t.bpm > 0;
+                    const hasKey = t.key !== "Unknown";
+                    const tStr = JSON.stringify(t).replace(/"/g, '&quot;');
 
                     const el = document.createElement('div');
-                    el.className = "bg-surface border border-gray-700/50 p-3 rounded flex flex-col gap-2 hover:bg-[#36393f] transition-colors group";
+                    el.className = "bg-surface border border-gray-700/50 p-3 rounded flex flex-col gap-2 transition-colors hover:bg-[#36393f] group";
                     el.innerHTML = `
                         <div class="flex justify-between items-start overflow-hidden">
                             <div class="truncate pr-2">
-                                <div class="font-bold text-sm text-white truncate" title="${track.title}">${track.title}</div>
-                                <div class="text-[10px] text-gray-500 font-mono truncate">${track.filename}</div>
+                                <div class="font-bold text-sm text-white truncate" title="${t.title}">${t.title}</div>
+                                <div class="text-[10px] text-gray-500 font-mono truncate">${t.filename}</div>
                             </div>
-                            <span class="text-[10px] uppercase font-bold text-gray-600 border border-gray-700 px-1 rounded flex-none">${track.format}</span>
+                            <span class="text-[10px] uppercase font-bold text-gray-600 border border-gray-700 px-1 rounded flex-none">${t.format}</span>
                         </div>
                         <div class="flex items-center gap-2 mt-1">
-                            <span class="text-xs font-mono bg-black/30 px-2 py-0.5 rounded ${bpmClass}">${bpmText}</span>
-                            <span class="text-xs font-mono bg-black/30 px-2 py-0.5 rounded ${keyClass}">${keyText}</span>
+                            <span class="text-xs font-mono bg-black/30 px-2 py-0.5 rounded ${hasBPM ? 'text-gray-300 border-gray-800' : 'text-gray-600 border-gray-800/50'}">${hasBPM ? t.bpm + ' BPM' : '--'}</span>
+                            <span class="text-xs font-mono bg-black/30 px-2 py-0.5 rounded ${hasKey ? 'text-gray-300 border-gray-800' : 'text-gray-600 border-gray-800/50'}">${hasKey ? t.key : '--'}</span>
                         </div>
                         <div class="mt-auto pt-2 flex gap-2">
-                            <button onclick="app.playTrack(${trackStr})" class="flex-1 bg-surface border border-gray-600 hover:bg-gray-700 text-white text-xs font-bold py-1.5 rounded transition-colors flex items-center justify-center gap-1">
-                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> Play
-                            </button>
-                            <a href="${downloadUrl}" download class="flex-1 bg-accent hover:bg-accentHover text-white text-xs font-bold py-1.5 rounded transition-colors text-center flex items-center justify-center gap-1">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> DL
-                            </a>
+                            <button onclick="app.play('${fileUrl}', '${t.title.replace(/'/g, "\\'")}', '${t.artist.replace(/'/g, "\\'")}')" class="flex-1 bg-surface border border-gray-600 hover:bg-gray-700 text-white text-xs font-bold py-1.5 rounded transition-colors flex items-center justify-center gap-1"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> Play</button>
+                            <a href="${fileUrl}" download class="flex-1 bg-accent hover:bg-accentHover text-white text-xs font-bold py-1.5 rounded transition-colors text-center flex items-center justify-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> DL</a>
                         </div>
                     `;
-                    fragment.appendChild(el);
+                    frag.appendChild(el);
                 });
-                this.els.grid.appendChild(fragment);
-                this.toggleEmpty(!found);
-            },
-
-            toggleEmpty(show) {
-                if (show) this.els.empty.classList.remove('hidden');
-                else this.els.empty.classList.add('hidden');
+                this.els.grid.appendChild(frag);
+                this.els.empty.classList.toggle('hidden', found);
             },
 
             resetFilters() {
-                this.els.inputs.search.value = "";
-                this.els.inputs.bpmMin.value = "";
-                this.els.inputs.bpmMax.value = "";
+                this.els.inputs.s.value = "";
+                this.els.inputs.min.value = "";
+                this.els.inputs.max.value = "";
                 this.els.inputs.key.value = "All";
-                this.state.filters = { search: "", minBPM: 0, maxBPM: 999, key: "All" };
+                this.state.filter = { s: "", min: 0, max: 999, key: "All" };
                 this.updateUI();
             },
 
-            // --- PLAYER ---
-            playTrack(track) {
-                const url = `${CONFIG.baseFileUrl}${encodeURIComponent(track.artist)}/${encodeURIComponent(track.filename)}`;
-                this.els.player.title.textContent = track.title;
-                this.els.player.artist.textContent = track.artist;
-                this.els.player.bar.classList.remove('player-hidden');
-                
+            play(url, title, artist) {
+                this.els.p.title.textContent = title;
+                this.els.p.artist.textContent = artist;
+                this.els.p.bar.classList.remove('player-hidden');
                 this.audio.src = url;
-                this.audio.play().then(() => {
-                    this.state.isPlaying = true;
-                    this.updatePlayIcon();
-                }).catch(e => {
-                    console.error(e);
-                    alert("Playback failed. File might be missing locally.");
-                });
+                this.audio.play().then(() => { this.state.playing = true; this.updateIcons(); })
+                .catch(e => { console.error(e); alert("Playback failed. Check file path."); });
             },
 
             togglePlay() {
-                if (this.audio.paused) {
-                    this.audio.play();
-                    this.state.isPlaying = true;
-                } else {
-                    this.audio.pause();
-                    this.state.isPlaying = false;
-                }
-                this.updatePlayIcon();
+                this.audio.paused ? this.audio.play() : this.audio.pause();
+                this.state.playing = !this.audio.paused;
+                this.updateIcons();
             },
 
-            updatePlayIcon() {
-                this.els.player.iconPlay.classList.toggle('hidden', this.state.isPlaying);
-                this.els.player.iconPause.classList.toggle('hidden', !this.state.isPlaying);
+            updateIcons() {
+                this.els.p.play.classList.toggle('hidden', this.state.playing);
+                this.els.p.pause.classList.toggle('hidden', !this.state.playing);
             },
 
-            seek(sec) {
-                if (this.audio.duration) this.audio.currentTime = Math.min(Math.max(this.audio.currentTime + sec, 0), this.audio.duration);
-            },
+            seek(sec) { if (this.audio.duration) this.audio.currentTime = Math.min(Math.max(this.audio.currentTime + sec, 0), this.audio.duration); },
+            closePlayer() { this.audio.pause(); this.state.playing = false; this.els.p.bar.classList.add('player-hidden'); },
+            
+            fmtTime(s) { return `${Math.floor(s/60)}:${Math.floor(s%60).toString().padStart(2,'0')}`; },
 
-            closePlayer() {
-                this.audio.pause();
-                this.state.isPlaying = false;
-                this.els.player.bar.classList.add('player-hidden');
-            },
-
-            setupPlayerEvents() {
+            setupEvents() {
                 this.audio.addEventListener('timeupdate', () => {
                     if (!this.audio.duration) return;
-                    const pct = (this.audio.currentTime / this.audio.duration) * 100;
-                    this.els.player.progress.value = pct;
-                    this.els.player.currTime.textContent = this.fmtTime(this.audio.currentTime);
-                    this.els.player.totalTime.textContent = this.fmtTime(this.audio.duration);
+                    this.els.p.prog.value = (this.audio.currentTime / this.audio.duration) * 100;
+                    this.els.p.curr.textContent = this.fmtTime(this.audio.currentTime);
+                    this.els.p.total.textContent = this.fmtTime(this.audio.duration);
                 });
+                this.audio.addEventListener('ended', () => { this.state.playing = false; this.updateIcons(); this.els.p.prog.value = 0; });
+                this.els.p.prog.addEventListener('input', (e) => { if (this.audio.duration) this.audio.currentTime = (e.target.value / 100) * this.audio.duration; });
                 
-                this.audio.addEventListener('ended', () => {
-                    this.state.isPlaying = false;
-                    this.updatePlayIcon();
-                    this.els.player.progress.value = 0;
-                });
-
-                this.els.player.progress.addEventListener('input', (e) => {
-                    if (this.audio.duration) this.audio.currentTime = (e.target.value / 100) * this.audio.duration;
-                });
-            },
-
-            fmtTime(s) {
-                return `${Math.floor(s/60)}:${Math.floor(s%60).toString().padStart(2,'0')}`;
-            },
-
-            setupInputEvents() {
-                const debounce = (fn, ms) => {
-                    let t;
-                    return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
-                };
-                
-                const onInput = debounce(() => {
-                    this.state.filters.search = this.els.inputs.search.value;
-                    this.state.filters.minBPM = parseInt(this.els.inputs.bpmMin.value) || 0;
-                    this.state.filters.maxBPM = parseInt(this.els.inputs.bpmMax.value) || 999;
-                    this.state.filters.key = this.els.inputs.key.value;
+                const db = (fn, ms) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }};
+                const onInp = db(() => {
+                    this.state.filter = { s: this.els.inputs.s.value, min: parseInt(this.els.inputs.min.value)||0, max: parseInt(this.els.inputs.max.value)||999, key: this.els.inputs.key.value };
                     this.updateUI();
                 }, 150);
-
-                this.els.inputs.search.addEventListener('input', onInput);
-                this.els.inputs.bpmMin.addEventListener('input', onInput);
-                this.els.inputs.bpmMax.addEventListener('input', onInput);
-                this.els.inputs.key.addEventListener('change', onInput);
+                
+                ['input', 'change'].forEach(e => {
+                    this.els.inputs.s.addEventListener(e, onInp);
+                    this.els.inputs.min.addEventListener(e, onInp);
+                    this.els.inputs.max.addEventListener(e, onInp);
+                    this.els.inputs.key.addEventListener(e, onInp);
+                });
             }
         };
 
